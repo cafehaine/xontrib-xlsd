@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+An improved ls for xonsh, inspired by lsd.
+
+Registers automatically as an alias for ls on load.
+"""
 import argparse
 from enum import Enum, auto
 from fnmatch import fnmatch
