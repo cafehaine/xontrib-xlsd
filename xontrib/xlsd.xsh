@@ -490,7 +490,7 @@ def _xlsd_column_gid(direntry: os.DirEntry) -> str:
     return f"{_LS_COLORS['owner_group']}{groupname}{_LS_COLORS['reset']}"
 
 
-@xlsd_register_column('size', ColumnAlignment.LEFT)
+@xlsd_register_column('size', ColumnAlignment.RIGHT)
 def _xlsd_column_size(direntry: os.DirEntry) -> str:
     """
     Format the size of a file.
