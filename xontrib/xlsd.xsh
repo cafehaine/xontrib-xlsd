@@ -15,12 +15,31 @@ import re
 import shutil
 import stat
 import time
-from typing import List, Union
+from typing import Callable, Dict, List, Tuple, Union
 
 import magic
 from xonsh.proc import STDOUT_CAPTURE_KINDS
 from xonsh import platform
 from wcwidth import wcswidth
+
+if 'XLSD_LIST_COLUMNS' not in ${...}:
+    $XLSD_LIST_COLUMNS = ['mode', 'hardlinks', 'uid', 'gid', 'size', 'mtime', 'name']
+
+XlsdColumn = Callable[[os.DirEntry],str]
+
+#TODO see with xonsh devs, imo shouldn't crash
+#_XLSD_COLUMNS: Dict[str, Tuple[XlsdColumn, ColumnAlignment]] = {}
+_XLSD_COLUMNS = {}
+
+def xlsd_register_column(name: str, alignment: ColumnAlignment):
+    """
+    Register a function that can be called in the -l list mode.
+    """
+    def decorator(func: XlsdColumn):
+        _XLSD_COLUMNS[name] = (func, alignment)
+        return func
+    return decorator
+
 
 # Shamefully taken from https://stackoverflow.com/a/14693789
 _ANSI_ESCAPE_REGEX = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
@@ -428,46 +447,96 @@ def _show_table(columns: List[List[str]], column_alignments: List[ColumnAlignmen
 
         print((" " * _LS_COLUMN_SPACING).join(row_text))
 
+################
+# List columns #
+################
 
-def _format_mode(mode: int) -> str:
+@xlsd_register_column('mode', ColumnAlignment.LEFT)
+def _xlsd_column_mode(direntry: os.DirEntry) -> str:
     """
     Format the mode from the stat structure for a file.
     """
+    mode = direntry.stat(follow_symlinks=False).st_mode
     file_type = stat.S_IFMT(mode)
     permissions = f"{mode - file_type:4o}"
     permissions_text = f"{permissions[0]}{_LS_COLORS['owner_user']}{permissions[1]}{_LS_COLORS['reset']}{_LS_COLORS['owner_group']}{permissions[2]}{_LS_COLORS['reset']}{permissions[3]}"
     return "{}{}".format(_LS_STAT_FILE_TYPE_ICONS[file_type], permissions_text)
 
 
+@xlsd_register_column('hardlinks', ColumnAlignment.RIGHT)
+def _xlsd_column_hardlinks(direntry: os.DirEntry) -> str:
+    """
+    Show the number of hardlinks for a file.
+    """
+    return str(direntry.stat(follow_symlinks=False).st_nlink)
+
+
+@xlsd_register_column('uid', ColumnAlignment.LEFT)
+def _xlsd_column_uid(direntry: os.DirEntry) -> str:
+    """
+    Show the owner (user) of the file.
+    """
+    username = pwd.getpwuid(direntry.stat().st_uid)[0]
+    return f"{_LS_COLORS['owner_user']}{username}{_LS_COLORS['reset']}"
+
+
+@xlsd_register_column('gid', ColumnAlignment.LEFT)
+def _xlsd_column_gid(direntry: os.DirEntry) -> str:
+    """
+    Show the group that owns the file.
+    """
+    groupname = grp.getgrgid(direntry.stat().st_gid)[0]
+    return f"{_LS_COLORS['owner_group']}{groupname}{_LS_COLORS['reset']}"
+
+
+@xlsd_register_column('size', ColumnAlignment.LEFT)
+def _xlsd_column_size(direntry: os.DirEntry) -> str:
+    """
+    Format the size of a file.
+    """
+    return _format_size(direntry.stat().st_size)
+
+
+@xlsd_register_column('mtime', ColumnAlignment.LEFT)
+def _xlsd_column_mtime(direntry: os.DirEntry) -> str:
+    """
+    Format the last modification date for a direntry.
+    """
+    return time.strftime("%x %X", time.gmtime(direntry.stat().st_mtime))
+
+
+@xlsd_register_column('name', ColumnAlignment.LEFT)
+def _xlsd_column_name(direntry: os.DirEntry) -> str:
+    """
+    Simply format the filename of the direntry.
+    """
+    return _format_direntry_name(direntry, True)
+
+#################
+# /List columns #
+#################
+
 def _long_list(path: str, show_hidden: bool = False) -> None:
     """
     Display the long list format for a directory.
     """
-    #TODO less "hardcoded" way with a separate function for each column?
-    direntries = _get_entries(path, show_hidden)
-    columns = [[],[],[],[],[],[],[]]
-    for direntry in direntries:
-        stat = direntry.stat()
-        stat_no_follow = direntry.stat(follow_symlinks=False)
-        #TODO better format than just octal base
-        columns[0].append(_format_mode(stat_no_follow.st_mode))
-        columns[1].append(str(stat.st_nlink))
-        columns[2].append(f"{_LS_COLORS['owner_user']}{pwd.getpwuid(stat.st_uid)[0]}{_LS_COLORS['reset']}")
-        columns[3].append(f"{_LS_COLORS['owner_group']}{grp.getgrgid(stat.st_gid)[0]}{_LS_COLORS['reset']}")
-        columns[4].append(_format_size(stat.st_size))
-        #TODO better format (today, a year ago..)
-        columns[5].append(time.strftime("%x %X", time.gmtime(stat.st_mtime)))
-        columns[6].append(_format_direntry_name(direntry, True))
+    selected_columns = [_XLSD_COLUMNS.get(name, (None, ColumnAlignment.LEFT)) for name in $XLSD_LIST_COLUMNS]
+    columns = [[] for i in range(len(selected_columns))]
+    alignments = [tup[1] for tup in selected_columns]
 
-    _show_table(columns, [
-        ColumnAlignment.IGNORE,
-        ColumnAlignment.RIGHT,
-        ColumnAlignment.LEFT,
-        ColumnAlignment.LEFT,
-        ColumnAlignment.RIGHT,
-        ColumnAlignment.LEFT,
-        ColumnAlignment.LEFT
-        ])
+    direntries = _get_entries(path, show_hidden)
+    for direntry in direntries:
+        for index, (callback, _) in enumerate(selected_columns):
+            value = "ERR"
+            #value = callback(direntry)
+            try:
+                value = callback(direntry)
+            except Exception:
+                pass
+            columns[index].append(value)
+
+    _show_table(columns, alignments)
+
 
 _ls_parser = argparse.ArgumentParser()
 _ls_parser.add_argument('paths', type=str, nargs='*', default=['.'], help="The directories to list")
