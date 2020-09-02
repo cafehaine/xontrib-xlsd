@@ -15,9 +15,8 @@ import re
 import shutil
 import stat
 import time
-from typing import Callable, Dict, List, Tuple, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
-import magic
 from xonsh.proc import STDOUT_CAPTURE_KINDS
 from xonsh import platform
 from wcwidth import wcswidth
@@ -45,6 +44,24 @@ def xlsd_register_column(name: str, alignment: ColumnAlignment):
     """
     def decorator(func: XlsdColumn):
         _XLSD_COLUMNS[name] = (func, alignment)
+        return func
+    return decorator
+
+if 'XLSD_ICON_SOURCES' not in ${...}:
+    $XLSD_ICON_SOURCES = ['extension', 'libmagic']
+
+XlsdIconSource = Callable[[os.DirEntry], Optional[str]]
+
+#TODO see with xonsh devs, imo shouldn't crash
+#_XLSD_ICON_SOURCES: Dict[str, XlsdIconSource] = {}
+_XLSD_ICON_SOURCES = {}
+
+def xlsd_register_icon_source(name: str):
+    """
+    Register a function that can be used to determine the icon for a direntry.
+    """
+    def decorator(func: XlsdIconSource):
+        _XLSD_ICON_SOURCES[name] = func
         return func
     return decorator
 
@@ -210,46 +227,70 @@ def _format_size(size: int) -> str:
 
     return f"{size:.1f}{_LS_COLORS['size_unit']}{unit}{_LS_COLORS['reset']}"
 
+################
+# Icon sources #
+################
 
-def _icon_from_mimetype(mimetype: str) -> str:
-    """
-    Return the emoji for a mimetype.
-    """
-    for pattern, icon_name in _LS_MIMETYPE_ICONS:
-        if fnmatch(mimetype, pattern):
-            return _LS_ICONS[icon_name]
-    return _LS_ICONS['default']
+# the 'magic' lib might only be included in arch linux, it doesn't seem to work
+# on macos.
+try:
+    import magic
+    @xlsd_register_icon_source('libmagic')
+    def _xlsd_icon_source_libmagic(direntry: os.DirEntry) -> Optional[str]:
+        """
+        Return the icon for a direntry using the file's mimetype.
+        """
+        real_path = direntry.path if not direntry.is_symlink() else os.readlink(direntry.path)
+        try:
+            # This is twice as fast as the "intended method"
+            # magic.detect_from_filename(path).mime_type
+            # since the "intended method" seems to run the matching twice
+            mimetype = magic.mime_magic.file(real_path).split('; ')[0]
+        except:
+            return None
+
+        for pattern, icon_name in _LS_MIMETYPE_ICONS:
+            if fnmatch(mimetype, pattern):
+                return _LS_ICONS[icon_name]
+        return None
+finally:
+    pass
 
 
-def _icon_for_direntry(entry: os.DirEntry, real_path: str) -> str:
+@xlsd_register_icon_source('extension')
+def _xlsd_icon_source_extension(direntry: os.DirEntry) -> Optional[str]:
     """
-    Return the emoji for a direntry.
-
-    First tries to determine the emoji using the file extension, and then falls
-    back to using mimetypes.
+    Return the emoji for a direntry using the file extension.
     """
-    if entry.is_dir(follow_symlinks=True):
+    if direntry.is_dir(follow_symlinks=True):
         return _LS_ICONS['folder']
 
-    # Extension based matching
-    _, extension = os.path.splitext(entry.name)
+    _, extension = os.path.splitext(direntry.name)
     extension = extension[1:].lower() # remove leading '.' and use lowercase
 
     for extensions, icon_name in _LS_EXTENSION_ICONS:
         if extension in extensions:
             return _LS_ICONS[icon_name]
 
-    # Fall back to mimetype matching
-    icon = _LS_ICONS['error']
-    try:
-        # This is twice as fast as the "intended method"
-        # magic.detect_from_filename(path).mime_type
-        # since the "intended method" seems to run the matching twice
-        mimetype = magic.mime_magic.file(real_path).split('; ')[0]
-        icon = _icon_from_mimetype(mimetype)
-    except:
-        pass
-    return icon
+    return None
+
+#################
+# /Icon sources #
+#################
+
+def _icon_for_direntry(entry: os.DirEntry) -> str:
+    """
+    Return the icon for a direntry.
+    """
+    for source_name in $XLSD_ICON_SOURCES:
+        result = None
+        try:
+            result = _XLSD_ICON_SOURCES[source_name](entry)
+        except Exception:
+            pass
+        if result is not None:
+            return result
+    return _LS_ICONS['default']
 
 
 def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
@@ -262,7 +303,7 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
     need_reset = False
 
     # Show the icon
-    icon = _icon_for_direntry(entry, path)
+    icon = _icon_for_direntry(entry)
     name = "{}{}".format(icon, name)
 
     # if entry is a directory, add a trailing '/'
