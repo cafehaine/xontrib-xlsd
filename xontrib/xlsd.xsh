@@ -22,6 +22,14 @@ from xonsh.proc import STDOUT_CAPTURE_KINDS
 from xonsh import platform
 from wcwidth import wcswidth
 
+
+class ColumnAlignment(Enum):
+    LEFT = auto()
+    RIGHT = auto()
+    IGNORE = auto()
+    #TODO CENTERED = auto()
+
+
 if 'XLSD_LIST_COLUMNS' not in ${...}:
     $XLSD_LIST_COLUMNS = ['mode', 'hardlinks', 'uid', 'gid', 'size', 'mtime', 'name']
 
@@ -58,13 +66,6 @@ def _text_width(text: str) -> int:
     Handles ANSI escape sequences.
     """
     return wcswidth(_strip_ansi(text))
-
-
-class ColumnAlignment(Enum):
-    LEFT = auto()
-    RIGHT = auto()
-    IGNORE = auto()
-    #TODO CENTERED = auto()
 
 
 _LS_COLORS = {
