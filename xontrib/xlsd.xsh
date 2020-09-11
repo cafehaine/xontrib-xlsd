@@ -138,6 +138,7 @@ _LS_ICONS = {
     'lua':        "🌙",
     'perl':       "🧅",
     'c':          "𝐂 ",
+    'xonsh':      "🐚",
 }
 
 _LS_COLUMN_SPACING = 2
@@ -199,11 +200,12 @@ _LS_EXTENSION_ICONS = [
     ({'pl'}, 'perl'),
     ({'css', 'less', 'colorscheme', 'theme', 'xsl'}, 'stylesheet'),
     ({'c', 'h'}, 'c'),
+    ({'xsh', 'xonshrc'}, 'xonsh'),
     # Compressed files
     ({'zip', '7z', 'rar', 'gz', 'xz'}, 'compressed'),
     # Executables
     ({'exe', 'bat', 'cmd', 'dll'}, 'windows'),
-    ({'so', 'elf', 'sh', 'xsh', 'zsh', 'ksh', 'pl', 'o'}, 'linux'),
+    ({'so', 'elf', 'sh', 'zsh', 'ksh', 'pl', 'o'}, 'linux'),
     # Misc
     ({'iso', 'cue'}, 'iso'),
     ({'vcard'}, 'contacts'),
