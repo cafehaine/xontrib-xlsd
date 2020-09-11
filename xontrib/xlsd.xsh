@@ -21,6 +21,7 @@ from xonsh.proc import STDOUT_CAPTURE_KINDS
 from xonsh import platform
 from wcwidth import wcswidth
 
+import xlsd
 
 class ColumnAlignment(Enum):
     LEFT = auto()
@@ -28,6 +29,8 @@ class ColumnAlignment(Enum):
     IGNORE = auto()
     #TODO CENTERED = auto()
 
+if 'XLSD_SORT_METHOD' not in ${...}:
+    $XLSD_SORT_METHOD = 'directories_first'
 
 if 'XLSD_LIST_COLUMNS' not in ${...}:
     $XLSD_LIST_COLUMNS = ['mode', 'hardlinks', 'uid', 'gid', 'size', 'mtime', 'name']
@@ -346,8 +349,7 @@ def _get_entries(path: str, show_hidden: bool) -> List[os.DirEntry]:
     """
     Return the list of DirEntrys for a path, sorted by name, directories first.
     """
-    files = []
-    directories = []
+    entries = []
     try:
         with platform.scandir(path) as iterator:
             for entry in iterator:
@@ -355,16 +357,13 @@ def _get_entries(path: str, show_hidden: bool) -> List[os.DirEntry]:
                 if not show_hidden and entry.name.startswith('.'):
                     continue
 
-                if entry.is_dir():
-                    directories.append(entry)
-                else:
-                    files.append(entry)
+                entries.append(entry)
     except PermissionError:
         pass
 
-    files.sort(key = _direntry_lowercase_name)
-    directories.sort(key = _direntry_lowercase_name)
-    return directories + files
+    sort_method = xlsd.XLSD_SORT_METHODS.get($XLSD_SORT_METHOD, lambda x: x)
+
+    return sort_method(entries)
 
 
 def _get_column_width(entries: List[str], columns: int, column: int) -> int:

@@ -55,6 +55,29 @@ xontrib load xlsd
 
 # Customizing
 
+## File order
+
+### Setting the file order
+
+In your `.xonshrc`, define a `$XLSD_SORT_METHOD` environment variable with one of the following values:
+
+- `"directories_first"`: The default: alphabetical order, with directories first
+- `"alphabetical"`: Simple alphabetical order
+- `"as_is"`: The default order of your OS.
+
+### Creating your own sort function
+
+You can create a simple alphabetical (case sensitive) sort function with the snippet:
+
+```python
+import xlsd
+
+@xlsd.xlsd_register_sort_method('alpha_case_sensitive')
+def my_sort_method(entries):
+    entries.sort(key=lambda e: e.name)
+    return entries
+```
+
 ## `-l` mode columns
 
 ### Changing the columns/the order

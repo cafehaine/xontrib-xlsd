@@ -12,9 +12,9 @@ setup(
     long_description_content_type="text/markdown",
     author="CaféHaine",
     author_email="kilian.guillaume@gmail.com",
-    packages=['xontrib'],
-    package_dir={'xontrib': 'xontrib'},
-    package_data={'xontrib': ['*.xsh']},
+    packages=['xontrib', 'xlsd'],
+    package_dir={'xontrib': 'xontrib', 'xlsd': 'xlsd'},
+    package_data={'xontrib': ['*.xsh'], 'xlsd': ['*.py']},
     zip_safe=False,
     classifiers=[
         "Environment :: Console",
