@@ -169,7 +169,7 @@ def _xlsd_column_filename(direntry):
 
 There are multiple colors/text effects that you can change in xlsd.
 
-The full list of used colors is available in [xlsd/__init__.py](xlsd/__init__.py#L4).
+The full list of used colors is available in [xlsd/\_\_init\_\_.py](xlsd/__init__.py#L4).
 
 Here is a small example: we're going to make executables appear dark red.
 
