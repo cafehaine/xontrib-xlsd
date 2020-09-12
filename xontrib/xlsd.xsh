@@ -22,6 +22,7 @@ from xonsh import platform
 from wcwidth import wcswidth
 
 import xlsd
+from xlsd import icons
 
 class ColumnAlignment(Enum):
     LEFT = auto()
@@ -98,124 +99,7 @@ _LS_COLORS = {
     'size_unit':      "\033[36m",
 }
 
-_LS_STAT_FILE_TYPE_ICONS = {
-    stat.S_IFSOCK: "🌐",
-    stat.S_IFLNK:  "🔗",
-    stat.S_IFREG:  "📄",
-    stat.S_IFBLK:  "💾",
-    stat.S_IFDIR:  "📁",
-    stat.S_IFCHR:  "🖶 ",
-    stat.S_IFIFO:  "🚿",
-}
-
-# Technically only 1, but kitty uses 2 "cells" for each emoji.
-_LS_ICON_WIDTH = 2
-#TODO This should be determined per-icon with wcwidth
-
-_LS_ICONS = {
-    'default':    "❔",
-    'error':      "🚫",
-    'folder':     "📁",
-    'text':       "📄",
-    'chart':      "📊",
-    'music':      "🎵",
-    'video':      "🎬",
-    'photo':      "📷",
-    'iso':        "💿",
-    'compressed': "🗜 ",
-    'application':"⚙ ",
-    'rich_text':  "📰",
-    'stylesheet': "🎨",
-    'contacts':   "📇",
-    'calendar':   "📅",
-    'config':     "🔧",
-    'lock':       "🔒",
-    # os
-    'windows':    "🍷",
-    'linux':      "🐧",
-    # language
-    'java':       "☕",
-    'python':     "🐍",
-    'php':        "🐘",
-    'rust':       "🦀",
-    'lua':        "🌙",
-    'perl':       "🧅",
-    'c':          "𝐂 ",
-    'xonsh':      "🐚",
-}
-
 _LS_COLUMN_SPACING = 2
-
-# Note that the order matters!
-_LS_MIMETYPE_ICONS = [
-    ('inode/directory', 'folder'),
-    # Rich text
-    ('application/pdf', 'rich_text'),
-    ('application/vnd.oasis.opendocument.text', 'rich_text'),
-    ('application/msword', 'rich_text'),
-    ('application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'rich_text'),
-    ('text/html', 'rich_text'),
-    # Tabular data/charts
-    ('application/vnd.oasis.opendocument.spreadsheet', 'chart'),
-    ('application/vnd.ms-excel', 'chart'),
-    ('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'chart'),
-    ('text/csv', 'chart'),
-    # Java
-    ('application/java-archive', 'java'),
-    ('application/x-java-applet', 'java'),
-    # Misc
-    ('application/x-iso9660-image', 'iso'),
-    ('application/zip', 'compressed'),
-    ('application/x-dosexec', 'windows'),
-    ('text/x-script.python', 'python'),
-    ('text/x-php', 'php'),
-    ('application/x-pie-executable', 'linux'),
-    ('text/vcard', 'contacts'),
-    ('text/calendar', 'calendar'),
-    # Generics
-    ('text/*', 'text'),
-    ('application/*', 'application'),
-    ('image/*', 'photo'),
-    ('audio/*', 'music'),
-    ('video/*', 'video'),
-]
-
-_LS_EXTENSION_ICONS = [
-    # Text
-    ({'txt', 'log'}, 'text'),
-    ({'json', 'yml', 'toml', 'xml', 'ini', 'conf', 'rc', 'cfg', 'vbox', 'vbox-prev'}, 'config'),
-    # Photo
-    ({'jpe', 'jpg', 'jpeg', 'png', 'apng', 'gif', 'bmp', 'ico', 'tif', 'tiff', 'tga', 'webp', 'xpm', 'xcf', 'svg'}, 'photo'),
-    # Music
-    ({'flac', 'ogg', 'mp3', 'wav'}, 'music'),
-    # Video
-    ({'avi', 'mp4'}, 'video'),
-    # Rich text
-    ({'pdf', 'odt', 'doc', 'docx', 'html', 'htm', 'xhtm', 'xhtml', 'md', 'rtf', 'tex', 'rst'}, 'rich_text'),
-    # Tabular data/charts
-    ({'ods', 'xls', 'xlsx', 'csv'}, 'chart'),
-    # Programming languages
-    ({'jar', 'jad', 'java'}, 'java'),
-    ({'py', 'pyc'}, 'python'),
-    ({'php'}, 'php'),
-    ({'rs', 'rlib', 'rmeta'}, 'rust'),
-    ({'lua'}, 'lua'),
-    ({'pl'}, 'perl'),
-    ({'css', 'less', 'colorscheme', 'theme', 'xsl'}, 'stylesheet'),
-    ({'c', 'h'}, 'c'),
-    ({'xsh', 'xonshrc'}, 'xonsh'),
-    # Compressed files
-    ({'zip', '7z', 'rar', 'gz', 'xz'}, 'compressed'),
-    # Executables
-    ({'exe', 'bat', 'cmd', 'dll'}, 'windows'),
-    ({'so', 'elf', 'sh', 'zsh', 'ksh', 'pl', 'o'}, 'linux'),
-    # Misc
-    ({'iso', 'cue'}, 'iso'),
-    ({'vcard'}, 'contacts'),
-    ({'ics'}, 'calendar'),
-    ({'lock', 'lck'}, 'lock'),
-]
-
 
 def _format_size(size: int) -> str:
     """
@@ -254,9 +138,9 @@ try:
         except:
             return None
 
-        for pattern, icon_name in _LS_MIMETYPE_ICONS:
+        for pattern, icon_name in icons.MIMETYPE_ICONS:
             if fnmatch(mimetype, pattern):
-                return _LS_ICONS[icon_name]
+                return icon_name
         return None
 finally:
     pass
@@ -268,14 +152,14 @@ def _xlsd_icon_source_extension(direntry: os.DirEntry) -> Optional[str]:
     Return the emoji for a direntry using the file extension.
     """
     if direntry.is_dir(follow_symlinks=True):
-        return _LS_ICONS['folder']
+        return 'folder'
 
     _, extension = os.path.splitext(direntry.name)
     extension = extension[1:].lower() # remove leading '.' and use lowercase
 
-    for extensions, icon_name in _LS_EXTENSION_ICONS:
+    for extensions, icon_name in icons.EXTENSION_ICONS:
         if extension in extensions:
-            return _LS_ICONS[icon_name]
+            return icon_name
 
     return None
 
@@ -288,14 +172,15 @@ def _icon_for_direntry(entry: os.DirEntry) -> str:
     Return the icon for a direntry.
     """
     for source_name in $XLSD_ICON_SOURCES:
-        result = None
+        name = None
         try:
-            result = _XLSD_ICON_SOURCES[source_name](entry)
+            name = _XLSD_ICON_SOURCES[source_name](entry)
         except Exception:
             pass
-        if result is not None:
-            return result
-    return _LS_ICONS['default']
+        if name is not None:
+            break
+
+    return icons.LS_ICONS.get(name)
 
 
 def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
@@ -503,7 +388,7 @@ def _xlsd_column_mode(direntry: os.DirEntry) -> str:
     file_type = stat.S_IFMT(mode)
     permissions = f"{mode - file_type:4o}"
     permissions_text = f"{permissions[0]}{_LS_COLORS['owner_user']}{permissions[1]}{_LS_COLORS['reset']}{_LS_COLORS['owner_group']}{permissions[2]}{_LS_COLORS['reset']}{permissions[3]}"
-    return "{}{}".format(_LS_STAT_FILE_TYPE_ICONS[file_type], permissions_text)
+    return "{}{}".format(icons.STAT_ICONS.get(file_type), permissions_text)
 
 
 @xlsd_register_column('hardlinks', ColumnAlignment.RIGHT)
