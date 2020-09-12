@@ -114,6 +114,10 @@ LS_ICONS = IconSet({
     'calendar':   "📅",
     'config':     "🔧",
     'lock':       "🔒",
+    'pirate':     "🕱",
+    'database':   "🗃",
+    'package':    "📦",
+    'mail':       "✉",
     # os
     'windows':    "🍷",
     'linux':      "🐧",
@@ -166,6 +170,7 @@ EXTENSION_ICONS = [
     # Text
     ({'txt', 'log'}, 'text'),
     ({'json', 'yml', 'toml', 'xml', 'ini', 'conf', 'rc', 'cfg', 'vbox', 'vbox-prev'}, 'config'),
+    ({'eml'}, 'mail'),
     # Photo
     ({'jpe', 'jpg', 'jpeg', 'png', 'apng', 'gif', 'bmp', 'ico', 'tif', 'tiff', 'tga', 'webp', 'xpm', 'xcf', 'svg'}, 'photo'),
     # Music
@@ -197,4 +202,8 @@ EXTENSION_ICONS = [
     ({'vcard'}, 'contacts'),
     ({'ics'}, 'calendar'),
     ({'lock', 'lck'}, 'lock'),
+    ({'reg'}, 'windows'),
+    ({'pkg', 'deb', 'rpm', 'apk'}, 'package'),
+    ({'db', 'sqlite', 'sqlite3', 'kdbx'}, 'database'),
+    ({'torrent'}, 'pirate'),
 ]
