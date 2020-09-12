@@ -1,9 +1,18 @@
 # xontrib-xlsd
-# DISCLAIMER: This is really early software, it probably wont work on your system.
 
 An improved ls for xonsh, inspired by lsd
-[![asciicast](https://asciinema.org/a/mxvzgiAT8tBldKsrxFusN2riY.svg)](https://asciinema.org/a/mxvzgiAT8tBldKsrxFusN2riY)
-The asciinema demo isn't great as it doesn't seem to account for the emoji's cell width.
+
+1. [How to install xontrib-xlsd](#how-to-install-xontrib-xlsd)
+   - [Release version](#release-version)
+   - [From git (might be unstable)](#from-git-might-be-unstable)
+2. [Features](#features)
+3. [Customizing](#customizing)
+   - [File order](#file-order)
+      - [Setting the file order](#setting-the-file-order)
+      - [Creating your own sort function](#creating-your-own-sort-function)
+    - [`-l` mode columns](#-l-mode-columns)
+      - [Changing the columns/the order](#changing-the-columnsthe-order)
+      - [Writing your own column](#writing-your-own-column)
 
 # How to install xontrib-xlsd
 
@@ -40,18 +49,6 @@ xontrib load xlsd
 - A `tree`-like display when called recursively
 - Customizable
 - Written in python so it doesn't need to run a separate binary
-
-# Installation
-
-Install the `xontrib-xlsd` package
-```bash
-pip install --user xontrib-xlsd
-```
-
-And load it from your `.xonshrc`
-```bash
-xontrib load xlsd
-```
 
 # Customizing
 
