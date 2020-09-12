@@ -114,7 +114,7 @@ The following snipped registers a new icon source (that simply returns the xonsh
 def my_icon_source(direntry):
     return 'xonsh'
 
-$XLSD_ICON_SOURCES['my_source', 'extension', 'libmagic']
+$XLSD_ICON_SOURCES = ['my_source', 'extension', 'libmagic']
 ```
 
 ## File order
