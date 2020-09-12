@@ -7,6 +7,11 @@ An improved ls for xonsh, inspired by lsd
    - [From git (might be unstable)](#from-git-might-be-unstable)
 2. [Features](#features)
 3. [Customizing](#customizing)
+   - [Icons](#icons)
+      - [Registering an icon](#registering-an-icon)
+      - [Extension based icon source](#extension-based-icon-source)
+      - [Libmagic based icon source](#libmagic-based-icon-source)
+      - [Creating a custom icon source and changing the order](#creating-a-custom-icon-source-and-changing-the-order)
    - [File order](#file-order)
       - [Setting the file order](#setting-the-file-order)
       - [Creating your own sort function](#creating-your-own-sort-function)
@@ -51,6 +56,66 @@ xontrib load xlsd
 - Written in python so it doesn't need to run a separate binary
 
 # Customizing
+
+## Icons
+
+### Registering an icon
+
+In xlsd, icons are registered using a name. The name is then used by the different rules to get an icon for an `os.DirEntry`.
+
+You can view the built-in icons in [xlsd/icons.py](xlsd/icons.py#L99).
+
+Here is how to add an icon (for example a rainbow). Put this in your `.xonshrc`
+
+```python
+import xlsd.icons
+
+xlsd.icons.LS_ICONS.add('rainbow', "🌈")
+```
+
+Icon sources can now use your fancy icon.
+
+You can also override built-in icons this way.
+
+### Extension based icon source
+
+The extension based rules are the fastest to run, and thus are the prefered way of setting icons.
+
+For example, to use your previously defined rainbow icon as the icon for `.txt` files, you can add the following snippet in your `.xonshrc`:
+
+```python
+import xlsd.icons
+
+xlsd.icons.EXTENSION_ICONS.insert(0, ({'txt'}, 'rainbow'))
+```
+
+### Libmagic based icon source
+
+*IMPORTANT NOTE*: This source seems to only work on Arch Linux systems at the moment.
+
+The libmagic (used by the `file` command on \*nix) based rules are slower, but allow getting *an* icon when no extension matched.
+
+For example, here we're going to use the xonsh icon for all folders. Add the following snippet in your `.xonshrc`:
+
+```python
+import xlsd.icons
+
+xlsd.icons.MIMETYPE_ICONS.insert(0, ("inode/directory", 'xonsh'))
+```
+
+Note that this won't work unless you set the icon source order with libmagic as the first source, since the extension source already defines an icon for directory entries.
+
+### Creating a custom icon source and changing the order
+
+The following snipped registers a new icon source (that simply returns the xonsh icon for everything), and makes it the first checked source. Put this in your `.xonshrc`.
+
+```python
+@xlsd_register_icon_source('my_source')
+def my_icon_source(direntry):
+    return 'xonsh'
+
+$XLSD_ICON_SOURCES['my_source', 'extension', 'libmagic']
+```
 
 ## File order
 
