@@ -22,7 +22,7 @@ from xonsh import platform
 from wcwidth import wcswidth
 
 import xlsd
-from xlsd import icons
+from xlsd import COLORS, icons
 
 class ColumnAlignment(Enum):
     LEFT = auto()
@@ -89,16 +89,6 @@ def _text_width(text: str) -> int:
     return wcswidth(_strip_ansi(text))
 
 
-_LS_COLORS = {
-    'reset':          "\033[0m",
-    'exec':           "\033[1m",
-    'symlink':        "\033[4m",
-    'symlink_target': "\033[96m",
-    'owner_user':     "\033[33m",
-    'owner_group':    "\033[35m",
-    'size_unit':      "\033[36m",
-}
-
 _LS_COLUMN_SPACING = 2
 
 def _format_size(size: int) -> str:
@@ -114,7 +104,7 @@ def _format_size(size: int) -> str:
 
     unit = units[unit_index] + "B" if unit_index != 0 else "B  "
 
-    return f"{size:.1f}{_LS_COLORS['size_unit']}{unit}{_LS_COLORS['reset']}"
+    return f"{size:.1f}{COLORS['size_unit']}{unit}{COLORS['reset']}"
 
 ################
 # Icon sources #
@@ -205,18 +195,18 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
         if show_target:
             # Show "source -> target" (with some colors)
             target = os.readlink(entry.path)
-            name = f"{_LS_COLORS['symlink']}{name}{_LS_COLORS['reset']} {_LS_COLORS['symlink_target']}->{_LS_COLORS['reset']} {target}"
+            name = f"{COLORS['symlink']}{name}{COLORS['reset']} {COLORS['symlink_target']}->{COLORS['reset']} {target}"
         else:
-            name = _LS_COLORS['symlink'] + name
+            name = COLORS['symlink'] + name
             need_reset = True
 
     # if entry is executable, make it bold (ignores directories as those must be executable)
     if not entry.is_dir() and os.access(path, os.X_OK):
-        name = _LS_COLORS['exec'] + name
+        name = COLORS['exec'] + name
         need_reset = True
 
     if need_reset:
-        name = name + _LS_COLORS['reset']
+        name = name + COLORS['reset']
 
     return name
 
@@ -387,7 +377,7 @@ def _xlsd_column_mode(direntry: os.DirEntry) -> str:
     mode = direntry.stat(follow_symlinks=False).st_mode
     file_type = stat.S_IFMT(mode)
     permissions = f"{mode - file_type:4o}"
-    permissions_text = f"{permissions[0]}{_LS_COLORS['owner_user']}{permissions[1]}{_LS_COLORS['reset']}{_LS_COLORS['owner_group']}{permissions[2]}{_LS_COLORS['reset']}{permissions[3]}"
+    permissions_text = f"{permissions[0]}{COLORS['owner_user']}{permissions[1]}{COLORS['reset']}{COLORS['owner_group']}{permissions[2]}{COLORS['reset']}{permissions[3]}"
     return "{}{}".format(icons.STAT_ICONS.get(file_type), permissions_text)
 
 
@@ -405,7 +395,7 @@ def _xlsd_column_uid(direntry: os.DirEntry) -> str:
     Show the owner (user) of the file.
     """
     username = pwd.getpwuid(direntry.stat().st_uid)[0]
-    return f"{_LS_COLORS['owner_user']}{username}{_LS_COLORS['reset']}"
+    return f"{COLORS['owner_user']}{username}{COLORS['reset']}"
 
 
 @xlsd_register_column('gid', ColumnAlignment.LEFT)
@@ -414,7 +404,7 @@ def _xlsd_column_gid(direntry: os.DirEntry) -> str:
     Show the group that owns the file.
     """
     groupname = grp.getgrgid(direntry.stat().st_gid)[0]
-    return f"{_LS_COLORS['owner_group']}{groupname}{_LS_COLORS['reset']}"
+    return f"{COLORS['owner_group']}{groupname}{COLORS['reset']}"
 
 
 @xlsd_register_column('size', ColumnAlignment.RIGHT)

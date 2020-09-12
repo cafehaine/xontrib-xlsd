@@ -1,6 +1,16 @@
 import os
 from typing import Callable, Dict, List
 
+COLORS = {
+    'reset':          "\033[0m",
+    'exec':           "\033[1m",
+    'symlink':        "\033[4m",
+    'symlink_target': "\033[96m",
+    'owner_user':     "\033[33m",
+    'owner_group':    "\033[35m",
+    'size_unit':      "\033[36m",
+}
+
 XlsdSortMethod = Callable[[List[os.DirEntry]], List[os.DirEntry]]
 
 XLSD_SORT_METHODS: Dict[str, XlsdSortMethod] = {}

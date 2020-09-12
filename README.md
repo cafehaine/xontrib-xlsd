@@ -15,9 +15,10 @@ An improved ls for xonsh, inspired by lsd
    - [File order](#file-order)
       - [Setting the file order](#setting-the-file-order)
       - [Creating your own sort function](#creating-your-own-sort-function)
-    - [`-l` mode columns](#-l-mode-columns)
+   - [`-l` mode columns](#-l-mode-columns)
       - [Changing the columns/the order](#changing-the-columnsthe-order)
       - [Writing your own column](#writing-your-own-column)
+   - [Colors](#colors)
 
 # How to install xontrib-xlsd
 
@@ -163,3 +164,21 @@ A simple filename column could be registered like this:
 def _xlsd_column_filename(direntry):
     return direntry.name
 ```
+
+## Colors
+
+There are multiple colors/text effects that you can change in xlsd.
+
+The full list of used colors is available in [xlsd/__init__.py](xlsd/__init__.py#L4).
+
+Here is a small example: we're going to make executables appear dark red.
+
+```python
+import xlsd
+
+xlsd.COLORS['exec'] = '\x1b[31m'
+```
+
+You can use any escape code that your terminal emulator supports.
+
+For a quick list of colors/text effects, check out the [Wikipedia page on ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters).
