@@ -132,7 +132,7 @@ try:
             if fnmatch(mimetype, pattern):
                 return icon_name
         return None
-finally:
+except ModuleNotFoundError:
     pass
 
 
