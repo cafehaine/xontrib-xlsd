@@ -4,7 +4,7 @@ long_description = open('README.md').read()
 
 setup(
     name="xontrib-xlsd",
-    version="0.1.0",
+    version="0.1.1",
     license="GPLv3",
     url="https://github.com/cafehaine/xontrib-xlsd",
     description="An improved ls for xonsh, inspired by lsd",

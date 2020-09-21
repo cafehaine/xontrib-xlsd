@@ -1,4 +1,11 @@
 # Changelog for xlsd
+## Version 1.1
+- Dominic Ward
+  - Fix exception catching for libmagic
+[`b942bd9`](https://github.com/cafehaine/xontrib-xlsd/commit/b942bd9eb51c1283975b6aaa131c5ed6f284d51b)
+- CaféHaine
+  - Set up github workflow for automated publishing to pypi
+[`2db12c9`](https://github.com/cafehaine/xontrib-xlsd/commit/2db12c93c9df012201f87972a636b12375bc2c93)
 ## Version 1.0
 - Anthony Scopatz
   - Add a new icon for xonsh files
