@@ -171,14 +171,14 @@ There are multiple colors/text effects that you can change in xlsd.
 
 The full list of used colors is available in [xlsd/\_\_init\_\_.py](xlsd/__init__.py#L4).
 
-Here is a small example: we're going to make executables appear dark red.
+Here is a small example: we're going to make executables appear red.
 
 ```python
 import xlsd
 
-xlsd.COLORS['exec'] = '\x1b[31m'
+xlsd.COLORS['exec'] = '{INTENSE_RED}'
 ```
 
-You can use any escape code that your terminal emulator supports.
+You can use any valid xonsh color.
 
-For a quick list of colors/text effects, check out the [Wikipedia page on ANSI escape codes](https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_parameters).
+For a quick list of colors/text effects, check out the [xonsh tutorial on colors](https://xon.sh/tutorial.html#customizing-the-prompt).

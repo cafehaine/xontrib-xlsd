@@ -17,8 +17,9 @@ import stat
 import time
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
-from xonsh.proc import STDOUT_CAPTURE_KINDS
 from xonsh import platform
+from xonsh.proc import STDOUT_CAPTURE_KINDS
+from xonsh.tools import format_color, print_color
 from wcwidth import wcswidth
 
 import xlsd
@@ -86,7 +87,9 @@ def _text_width(text: str) -> int:
 
     Handles ANSI escape sequences.
     """
-    return wcswidth(_strip_ansi(text))
+    no_ansi = _strip_ansi(text)
+    no_color = "".join([token[1] for token in format_color(no_ansi)])
+    return wcswidth(no_color)
 
 
 _LS_COLUMN_SPACING = 2
@@ -104,7 +107,7 @@ def _format_size(size: int) -> str:
 
     unit = units[unit_index] + "B" if unit_index != 0 else "B  "
 
-    return f"{size:.1f}{COLORS['size_unit']}{unit}{COLORS['reset']}"
+    return f"{size:.1f}{COLORS['size_unit']}{unit}{{RESET}}"
 
 ################
 # Icon sources #
@@ -195,7 +198,7 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
         if show_target:
             # Show "source -> target" (with some colors)
             target = os.readlink(entry.path)
-            name = f"{COLORS['symlink']}{name}{COLORS['reset']} {COLORS['symlink_target']}->{COLORS['reset']} {target}"
+            name = f"{COLORS['symlink']}{name}{{RESET}} {COLORS['symlink_target']}->{{RESET}} {target}"
         else:
             name = COLORS['symlink'] + name
             need_reset = True
@@ -206,7 +209,7 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
         need_reset = True
 
     if need_reset:
-        name = name + COLORS['reset']
+        name = name + "{RESET}"
 
     return name
 
@@ -316,7 +319,7 @@ def _tree_list(path: str, show_hidden: bool = False, prefix: str = "") -> None:
     for index, direntry in enumerate(direntries):
         is_last_entry = index == len(direntries) - 1
         entry_prefix = prefix + ("╰─" if is_last_entry else "├─")
-        print("{}{}".format(entry_prefix, _format_direntry_name(direntry, True)))
+        print_color("{}{}".format(entry_prefix, _format_direntry_name(direntry, True)))
         if direntry.is_dir() and not direntry.is_symlink():
             _tree_list(direntry.path, show_hidden, prefix + ("  " if is_last_entry else "│ "))
 
@@ -363,7 +366,7 @@ def _show_table(columns: List[List[str]], column_alignments: List[ColumnAlignmen
                     pass
             row_text.append(text_value)
 
-        print((" " * _LS_COLUMN_SPACING).join(row_text))
+        print_color((" " * _LS_COLUMN_SPACING).join(row_text))
 
 ################
 # List columns #
@@ -377,7 +380,7 @@ def _xlsd_column_mode(direntry: os.DirEntry) -> str:
     mode = direntry.stat(follow_symlinks=False).st_mode
     file_type = stat.S_IFMT(mode)
     permissions = f"{mode - file_type:4o}"
-    permissions_text = f"{permissions[0]}{COLORS['owner_user']}{permissions[1]}{COLORS['reset']}{COLORS['owner_group']}{permissions[2]}{COLORS['reset']}{permissions[3]}"
+    permissions_text = f"{permissions[0]}{COLORS['owner_user']}{permissions[1]}{{RESET}}{COLORS['owner_group']}{permissions[2]}{{RESET}}{permissions[3]}"
     return "{}{}".format(icons.STAT_ICONS.get(file_type), permissions_text)
 
 
@@ -395,7 +398,7 @@ def _xlsd_column_uid(direntry: os.DirEntry) -> str:
     Show the owner (user) of the file.
     """
     username = pwd.getpwuid(direntry.stat().st_uid)[0]
-    return f"{COLORS['owner_user']}{username}{COLORS['reset']}"
+    return f"{COLORS['owner_user']}{username}{{RESET}}"
 
 
 @xlsd_register_column('gid', ColumnAlignment.LEFT)
@@ -404,7 +407,7 @@ def _xlsd_column_gid(direntry: os.DirEntry) -> str:
     Show the group that owns the file.
     """
     groupname = grp.getgrgid(direntry.stat().st_gid)[0]
-    return f"{COLORS['owner_group']}{groupname}{COLORS['reset']}"
+    return f"{COLORS['owner_group']}{groupname}{{RESET}}"
 
 
 @xlsd_register_column('size', ColumnAlignment.RIGHT)
@@ -482,7 +485,7 @@ def _ls(args, stdin, stdout, stderr, spec):
     arguments = _ls_parser.parse_args(args)
     for index, path in enumerate(arguments.paths):
         if len(arguments.paths) > 1:
-            print("{}:".format(path))
+            print_color("{}:".format(path))
 
         if arguments.recursive:
             _tree_list(path, arguments.all)
