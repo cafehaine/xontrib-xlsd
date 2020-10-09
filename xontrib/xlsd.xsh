@@ -176,6 +176,16 @@ def _icon_for_direntry(entry: os.DirEntry) -> str:
     return icons.LS_ICONS.get(name)
 
 
+def _get_color_for_name(filename: str) -> str:
+    """Return the xonsh color for the filename using the $LS_COLORS env var."""
+    for glob, colors in $LS_COLORS.items():
+        if fnmatch(filename, glob):
+            if colors:
+                return "{" + "}{".join(colors) + "}"
+            return ""
+    return ""
+
+
 def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
     """
     Return a string containing a bunch of ainsi escape codes as well as the "width" of the new name.
@@ -192,6 +202,11 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
     # if entry is a directory, add a trailing '/'
     if entry.is_dir():
         name = name + "/"
+
+    # apply color
+    color = _get_color_for_name(name)
+    if color:
+        name = f"{color}{name}{{RESET}}"
 
     # if entry is a symlink, underline it
     if entry.is_symlink():
