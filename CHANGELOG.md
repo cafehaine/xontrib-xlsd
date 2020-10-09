@@ -1,4 +1,11 @@
 # Changelog for xlsd
+## Version 1.2
+- anki-code
+  - Syntax highlighting for xsh on Github
+[`8873c1e`](https://github.com/cafehaine/xontrib-xlsd/commit/8873c1edb2d2fa635d531ba1198f582cc9cad9c0)
+- CaféHaine
+  - Switch to xonsh color codes instead of ansi escape codes
+[`2cdf19e`](https://github.com/cafehaine/xontrib-xlsd/commit/2cdf19ed9bb74cc7c16b97325997cda9944ef4e7)
 ## Version 1.1
 - Dominic Ward
   - Fix exception catching for libmagic
