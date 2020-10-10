@@ -18,6 +18,7 @@ import time
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from xonsh import platform
+from xonsh.color_tools import RE_XONSH_COLOR
 from xonsh.proc import STDOUT_CAPTURE_KINDS
 from xonsh.tools import format_color, print_color
 from wcwidth import wcswidth
@@ -74,22 +75,19 @@ def xlsd_register_icon_source(name: str):
 # Shamefully taken from https://stackoverflow.com/a/14693789
 _ANSI_ESCAPE_REGEX = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
 
-def _strip_ansi(text: str) -> str:
-    """
-    Remove all ansi escape codes in order to simplify length computation.
-    """
-    return _ANSI_ESCAPE_REGEX.sub("", text)
-
-
 def _text_width(text: str) -> int:
     """
     Return the number of terminal cells occupied by some text.
 
-    Handles ANSI escape sequences.
+    Handles ANSI escape sequences, as well as xonsh color codes.
     """
-    no_ansi = _strip_ansi(text)
-    no_color = "".join([token[1] for token in format_color(no_ansi)])
-    return wcswidth(no_color)
+    # formatted might be a list of "tokens" or a string with ansi codes
+    formatted = format_color(text)
+    if isinstance(formatted, list):
+        formatted = "".join([tok[1] for tok in formatted])
+
+    no_ansi = _ANSI_ESCAPE_REGEX.sub("", formatted)
+    return wcswidth(no_ansi)
 
 
 _LS_COLUMN_SPACING = 2
