@@ -190,41 +190,34 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
     """
     path = entry.path if not entry.is_symlink() else os.readlink(entry.path)
     name = entry.name
-    # if we need to send the ainsi reset sequence
-    need_reset = False
 
     # Show the icon
     icon = _icon_for_direntry(entry)
-    name = "{}{}".format(icon, name)
+    colors = []
+    name = "{}{}{{RESET}}".format(icon, name)
 
     # if entry is a directory, add a trailing '/'
     if entry.is_dir():
         name = name + "/"
 
     # apply color
-    color = _get_color_for_name(name)
+    color = _get_color_for_name(entry.name)
     if color:
-        name = f"{color}{name}{{RESET}}"
+        colors.append(color)
 
     # if entry is a symlink, underline it
     if entry.is_symlink():
+        colors.insert(0, COLORS['symlink'])
         if show_target:
             # Show "source -> target" (with some colors)
             target = os.readlink(entry.path)
-            name = f"{COLORS['symlink']}{name}{{RESET}} {COLORS['symlink_target']}->{{RESET}} {target}"
-        else:
-            name = COLORS['symlink'] + name
-            need_reset = True
+            name = name + f" {COLORS['symlink_target']}->{{RESET}} {target}"
 
     # if entry is executable, make it bold (ignores directories as those must be executable)
     if not entry.is_dir() and os.access(path, os.X_OK):
-        name = COLORS['exec'] + name
-        need_reset = True
+        colors.insert(0, COLORS['exec'])
 
-    if need_reset:
-        name = name + "{RESET}"
-
-    return name
+    return "".join(colors) + name
 
 
 def _direntry_lowercase_name(entry: os.DirEntry) -> str:
