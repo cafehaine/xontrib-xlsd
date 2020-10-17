@@ -171,12 +171,12 @@ There are multiple colors/text effects that you can change in xlsd.
 
 The full list of used colors is available in [xlsd/\_\_init\_\_.py](xlsd/__init__.py#L4).
 
-Here is a small example: we're going to make executables appear red.
+Here is a small example: we're going to make the size unit in -l mode appear red.
 
 ```python
 import xlsd
 
-xlsd.COLORS['exec'] = '{INTENSE_RED}'
+xlsd.COLORS['size_unit'] = '{INTENSE_RED}'
 ```
 
 You can use any valid xonsh color.

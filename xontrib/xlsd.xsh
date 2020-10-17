@@ -174,14 +174,49 @@ def _icon_for_direntry(entry: os.DirEntry) -> str:
     return icons.LS_ICONS.get(name)
 
 
-def _get_color_for_name(filename: str) -> str:
-    """Return the xonsh color for the filename using the $LS_COLORS env var."""
-    for glob, colors in $LS_COLORS.items():
-        if fnmatch(filename, glob):
-            if colors:
-                return "{" + "}{".join(colors) + "}"
-            return ""
-    return ""
+def _get_color_for_direntry(entry: os.DirEntry) -> str:
+    """Return one or multiple xonsh colors for the entry using $LS_COLORS."""
+    colors = []
+
+    mode = entry.stat(follow_symlinks=False).st_mode
+    file_type = stat.S_IFMT(mode)
+
+    # Most of the entries of this list: http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
+    if entry.is_dir(follow_symlinks=False): # Directory
+        colors.extend($LS_COLORS.get("di", []))
+    elif entry.is_symlink(): # Symlink
+        colors.extend($LS_COLORS.get("ln", []))
+    elif not os.path.exists(entry.path): # Broken link
+        colors.extend($LS_COLORS.get("or", []))
+    elif file_type == stat.S_IFIFO: # Pipe
+        colors.extend($LS_COLORS.get("pi", []))
+    elif file_type == stat.S_IFBLK: # Block device
+        colors.extend($LS_COLORS.get("bd", []))
+    elif file_type == stat.S_IFCHR: # Char device
+        colors.extend($LS_COLORS.get("cd", []))
+    elif file_type == stat.S_IFSOCK: # Socket
+        colors.extend($LS_COLORS.get("so", []))
+    elif mode & stat.S_ISUID: # Setuid
+        colors.extend($LS_COLORS.get("su", []))
+    elif mode & stat.S_ISGID: # Setgid
+        colors.extend($LS_COLORS.get("sg", []))
+    elif entry.is_dir(follow_symlinks=False):
+        if mode & stat.S_ISVTX and mode & stat.S_IWOTH: # sticky + other writable
+            colors.extend($LS_COLORS.get("tw", []))
+        elif mode & stat.S_IWOTH: # other writable
+            colors.extend($LS_COLORS.get("ow", []))
+        elif mode & stat.S_ISVTX: # sticky
+            colors.extend($LS_COLORS.get("st", []))
+    elif os.access(entry.path, os.X_OK): # executable
+        colors.extend($LS_COLORS.get("ex", []))
+    else: # Technically wrong, but will probably get us the expected result
+        colors.extend($LS_COLORS.get("fi", []))
+
+    for glob, matched_colors in $LS_COLORS.items():
+        if fnmatch(entry.name, glob):
+            colors.extend(matched_colors)
+            return "".join("{"+color+"}" for color in colors)
+    return "".join("{"+color+"}" for color in colors)
 
 
 def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
@@ -201,21 +236,15 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
         name = name + "/"
 
     # apply color
-    color = _get_color_for_name(entry.name)
+    color = _get_color_for_direntry(entry)
     if color:
         colors.append(color)
 
     # if entry is a symlink, underline it
-    if entry.is_symlink():
-        colors.insert(0, COLORS['symlink'])
-        if show_target:
-            # Show "source -> target" (with some colors)
-            target = os.readlink(entry.path)
-            name = name + f" {COLORS['symlink_target']}->{{RESET}} {target}"
-
-    # if entry is executable, make it bold (ignores directories as those must be executable)
-    if not entry.is_dir() and os.access(path, os.X_OK):
-        colors.insert(0, COLORS['exec'])
+    if entry.is_symlink() and show_target:
+        # Show "source -> target"
+        target = os.readlink(entry.path)
+        name = name + f" {COLORS['symlink_target']}->{{RESET}} {target}"
 
     return "".join(colors) + name
 

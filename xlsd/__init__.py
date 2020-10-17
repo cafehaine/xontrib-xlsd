@@ -2,8 +2,6 @@ import os
 from typing import Callable, Dict, List
 
 COLORS = {
-    'exec':           "{BOLD_DEFAULT}",
-    'symlink':        "{UNDERLINE_DEFAULT}",
     'symlink_target': "{CYAN}",
     'owner_user':     "{INTENSE_YELLOW}",
     'owner_group':    "{BLUE}",
