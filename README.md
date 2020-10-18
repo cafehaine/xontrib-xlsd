@@ -2,6 +2,8 @@
 
 An improved ls for xonsh, inspired by lsd
 
+![xlsd in action, listing xonsh's root directory](assets/social-preview.png)
+
 1. [How to install xontrib-xlsd](#how-to-install-xontrib-xlsd)
    - [Release version](#release-version)
    - [From git (might be unstable)](#from-git-might-be-unstable)
