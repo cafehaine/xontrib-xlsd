@@ -232,7 +232,10 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
     name = "{}{}{{RESET}}".format(icon, name)
 
     # if entry is a directory, add a trailing '/'
-    if entry.is_dir():
+    try:
+        if entry.is_dir():
+            name = name + "/"
+    except OSError: # Probably a circular symbolic link
         name = name + "/"
 
     # apply color
@@ -355,7 +358,7 @@ def _tree_list(path: str, show_hidden: bool = False, prefix: str = "") -> None:
         is_last_entry = index == len(direntries) - 1
         entry_prefix = prefix + ("╰─" if is_last_entry else "├─")
         print_color("{}{}".format(entry_prefix, _format_direntry_name(direntry, True)))
-        if direntry.is_dir() and not direntry.is_symlink():
+        if not direntry.is_symlink() and direntry.is_dir():
             _tree_list(direntry.path, show_hidden, prefix + ("  " if is_last_entry else "│ "))
 
 
