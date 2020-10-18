@@ -145,7 +145,9 @@ def _xlsd_icon_source_extension(direntry: os.DirEntry) -> Optional[str]:
     if direntry.is_dir(follow_symlinks=True):
         return 'folder'
 
-    _, extension = os.path.splitext(direntry.name)
+    name = direntry.name
+    name = f"_{name}" if name[0] == '.' else name
+    _, extension = os.path.splitext(name)
     extension = extension[1:].lower() # remove leading '.' and use lowercase
 
     for extensions, icon_name in icons.EXTENSION_ICONS:
