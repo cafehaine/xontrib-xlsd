@@ -184,10 +184,10 @@ def _get_color_for_direntry(entry: os.DirEntry) -> str:
     # Most of the entries of this list: http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
     if entry.is_dir(follow_symlinks=False): # Directory
         colors.extend($LS_COLORS.get("di", []))
+    elif not os.path.exists(entry.path): # Broken symlink
+        colors.extend($LS_COLORS.get("or", []))
     elif entry.is_symlink(): # Symlink
         colors.extend($LS_COLORS.get("ln", []))
-    elif not os.path.exists(entry.path): # Broken link
-        colors.extend($LS_COLORS.get("or", []))
     elif file_type == stat.S_IFIFO: # Pipe
         colors.extend($LS_COLORS.get("pi", []))
     elif file_type == stat.S_IFBLK: # Block device
