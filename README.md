@@ -1,8 +1,15 @@
-# xontrib-xlsd
+<p align="center">
+<b>xontrib-xlsd</b> is the next gen ls command for <a href="https://xon.sh">xonsh shell</a>, inspired by <a href="https://github.com/Peltoche/lsd">lsd</a>.
+</p>
 
-An improved ls for xonsh, inspired by lsd
+<a href="https://github.com/cafehaine/xontrib-xlsd"><img src="https://raw.githubusercontent.com/cafehaine/xontrib-xlsd/master/assets/social-preview.png" alt="Preview image"></a>
 
-![xlsd in action, listing xonsh's root directory](assets/social-preview.png)
+<p align="center">  
+If you like the idea click ⭐ on the repo and stay tuned.
+</p>
+
+
+## Contents
 
 1. [How to install xontrib-xlsd](#how-to-install-xontrib-xlsd)
    - [Release version](#release-version)
