@@ -4,10 +4,6 @@
 
 <a href="https://github.com/cafehaine/xontrib-xlsd"><img src="https://raw.githubusercontent.com/cafehaine/xontrib-xlsd/master/assets/social-preview.png" alt="Preview image"></a>
 
-<p align="center">  
-If you like the idea click ⭐ on the repo and stay tuned.
-</p>
-
 
 ## Contents
 
