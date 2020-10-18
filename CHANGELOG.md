@@ -1,4 +1,14 @@
 # Changelog for xlsd
+## Version 1.3
+- CaféHaine
+  - Implement support for $LS\_COLORS
+[`c558d14`](https://github.com/cafehaine/xontrib-xlsd/commit/c558d140590908e2aacba165efd26479cc59a32c)
+[`7f7378e`](https://github.com/cafehaine/xontrib-xlsd/commit/7f7378ede21754bf31374aa479066db18ff502ac)
+[`6e411a2`](https://github.com/cafehaine/xontrib-xlsd/commit/6e411a247719f1503f507e41ae09239ccbda0eb4)
+[`8a4583a`](https://github.com/cafehaine/xontrib-xlsd/commit/8a4583afda65359540d75dc7bb7153c6ecadbe12)
+[`5850984`](https://github.com/cafehaine/xontrib-xlsd/commit/5850984578d271febfc6403e4ed9712ca594c021)
+  - Prevent crashes when encountering a circular symbolic link
+[`4dcbc83`](https://github.com/cafehaine/xontrib-xlsd/commit/4dcbc837c558e2967d82c0eebef15dc45bfba8a3)
 ## Version 1.2
 - anki-code
   - Syntax highlighting for xsh on Github
