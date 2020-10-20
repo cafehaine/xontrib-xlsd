@@ -19,7 +19,10 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from xonsh import platform
 from xonsh.color_tools import RE_XONSH_COLOR
-from xonsh.proc import STDOUT_CAPTURE_KINDS
+try:
+    from xonsh.procs.pipelines import STDOUT_CAPTURE_KINDS
+except ImportError:
+    from xonsh.proc import STDOUT_CAPTURE_KINDS
 from xonsh.tools import format_color, print_color
 from wcwidth import wcswidth
 
