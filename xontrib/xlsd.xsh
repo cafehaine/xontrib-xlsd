@@ -480,16 +480,23 @@ def _xlsd_column_name(direntry: os.DirEntry) -> str:
 # /List columns #
 #################
 
-def _long_list(path: str, show_hidden: bool = False) -> None:
+def _long_list(path: str, show_hidden: bool = False) -> List[str]:
     """
     Display the long list format for a directory.
+
+    Returns a list of directories met, for recursive display.
     """
     selected_columns = [_XLSD_COLUMNS.get(name, (None, ColumnAlignment.LEFT)) for name in $XLSD_LIST_COLUMNS]
     columns = [[] for i in range(len(selected_columns))]
     alignments = [tup[1] for tup in selected_columns]
 
+    directories = []
+
     direntries = _get_entries(path, show_hidden)
     for direntry in direntries:
+        if direntry.is_dir(follow_symlinks=False):
+            directories.append(direntry.path)
+
         for index, (callback, _) in enumerate(selected_columns):
             value = "ERR"
             #value = callback(direntry)
@@ -501,13 +508,14 @@ def _long_list(path: str, show_hidden: bool = False) -> None:
 
     _show_table(columns, alignments)
 
+    return directories
+
 
 _ls_parser = argparse.ArgumentParser()
 _ls_parser.add_argument('paths', type=str, nargs='*', default=['.'], help="The directories to list")
 _ls_parser.add_argument("-a", "--all", help="Don't hide entries starting with .", action="store_true")
-_ls_format_group = _ls_parser.add_mutually_exclusive_group()
-_ls_format_group.add_argument("-l", help="Long listing format", action="store_true")
-_ls_format_group.add_argument("-R", "--recursive", help="Show in a tree format", action="store_true")
+_ls_parser.add_argument("-l", help="Long listing format", action="store_true")
+_ls_parser.add_argument("-R", "--recursive", default=False, help="Show in a tree format", action="store_true")
 
 
 def _ls(args, stdin, stdout, stderr, spec):
@@ -526,18 +534,25 @@ def _ls(args, stdin, stdout, stderr, spec):
         return
 
     arguments = _ls_parser.parse_args(args)
-    for index, path in enumerate(arguments.paths):
-        if len(arguments.paths) > 1:
+    paths = list(arguments.paths)
+
+    for index, path in enumerate(paths):
+        if len(paths) > 1 or arguments.recursive:
             print_color("{}:".format(path))
 
         if arguments.recursive:
-            _tree_list(path, arguments.all)
+            if arguments.l:
+                to_append = _long_list(path, arguments.all)
+                for new_path in to_append[::-1]:
+                    paths.insert(index+1, new_path)
+            else:
+                _tree_list(path, arguments.all)
         elif arguments.l:
             _long_list(path, arguments.all)
         else:
             _list_directory(path, arguments.all)
 
-        if len(arguments.paths) > 1 and index != len(arguments.paths) - 1:
+        if len(paths) > 1 and index != len(paths) - 1:
             print()
 
 
