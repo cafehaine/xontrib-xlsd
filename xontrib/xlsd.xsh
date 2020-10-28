@@ -4,30 +4,109 @@ An improved ls for xonsh, inspired by lsd.
 
 Registers automatically as an alias for ls on load.
 """
-import argparse
 from enum import Enum, auto
-from fnmatch import fnmatch
-import grp
 import math
 import os
-import pwd
-import re
-import shutil
-import stat
-import time
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
-from xonsh import platform
-from xonsh.color_tools import RE_XONSH_COLOR
-try:
-    from xonsh.procs.pipelines import STDOUT_CAPTURE_KINDS
-except ImportError:
-    from xonsh.proc import STDOUT_CAPTURE_KINDS
-from xonsh.tools import format_color, print_color
-from wcwidth import wcswidth
+from xonsh.lazyasd import lazyobject
+from xonsh.tools import format_color, print_color, is_string_seq
 
-import xlsd
-from xlsd import COLORS, icons
+# Lazy imports
+@lazyobject
+def grp():
+    import grp as mod
+    return mod
+
+
+@lazyobject
+def shutil():
+    import shutil as mod
+    return mod
+
+@lazyobject
+def pwd():
+    import pwd as mod
+    return mod
+
+
+@lazyobject
+def re():
+    import re as mod
+    return mod
+
+
+@lazyobject
+def time():
+    import time as mod
+    return mod
+
+
+@lazyobject
+def stat():
+    import stat as mod
+    return mod
+
+
+@lazyobject
+def platform():
+    import xonsh.platform
+    return xonsh.platform
+
+
+@lazyobject
+def RE_XONSH_COLOR():
+    import xonsh.color_tools
+    return xonsh.color_tools.RE_XONSH_COLOR
+
+
+@lazyobject
+def STDOUT_CAPTURE_KINDS():
+    try:
+        import xonsh.procs.pipelines as mod
+    except ImportError:
+        import xonsh.proc as mod
+    return mod.STDOUT_CAPTURE_KINDS
+
+
+@lazyobject
+def wcswidth():
+    import wcwidth
+    return wcwidth.wcswidth
+
+
+@lazyobject
+def xlsd():
+    import xlsd as mod
+    return mod
+
+
+@lazyobject
+def COLORS():
+    from xlsd import COLORS as colors
+    return colors
+
+
+@lazyobject
+def icons():
+    import xlsd.icons as mod
+    return mod
+
+
+@lazyobject
+def magic():
+    try:
+        import magic as mod
+    except ModuleNotFoundError:
+        mod = None
+    return mod
+
+
+@lazyobject
+def fnmatch():
+    from fnmatch import fnmatch as fnm
+    return fnm
+
 
 class ColumnAlignment(Enum):
     LEFT = auto()
@@ -35,11 +114,25 @@ class ColumnAlignment(Enum):
     IGNORE = auto()
     #TODO CENTERED = auto()
 
-if 'XLSD_SORT_METHOD' not in ${...}:
-    $XLSD_SORT_METHOD = 'directories_first'
 
-if 'XLSD_LIST_COLUMNS' not in ${...}:
-    $XLSD_LIST_COLUMNS = ['mode', 'hardlinks', 'uid', 'gid', 'size', 'mtime', 'name']
+def csv_to_list(x):
+    """Convert a comma-separated list of strings to a list of strings."""
+    if not x:
+        return []
+    else:
+        return x.split(",")
+
+
+def list_to_csv(x):
+    """Convert a list of strings to a comma-separated list of strings."""
+    return ",".join(x)
+
+
+${...}.register('XLSD_SORT_METHOD', type="str", default='directories_first')
+${...}.register('XLSD_LIST_COLUMNS', validate=is_string_seq, convert=csv_to_list,
+    detype=list_to_csv, default=['mode', 'hardlinks', 'uid', 'gid', 'size', 'mtime', 'name'])
+${...}.register('XLSD_ICON_SOURCES', validate=is_string_seq, convert=csv_to_list,
+    detype=list_to_csv, default=['extension', 'libmagic'])
 
 XlsdColumn = Callable[[os.DirEntry],str]
 
@@ -55,9 +148,6 @@ def xlsd_register_column(name: str, alignment: ColumnAlignment):
         _XLSD_COLUMNS[name] = (func, alignment)
         return func
     return decorator
-
-if 'XLSD_ICON_SOURCES' not in ${...}:
-    $XLSD_ICON_SOURCES = ['extension', 'libmagic']
 
 XlsdIconSource = Callable[[os.DirEntry], Optional[str]]
 
@@ -76,7 +166,10 @@ def xlsd_register_icon_source(name: str):
 
 
 # Shamefully taken from https://stackoverflow.com/a/14693789
-_ANSI_ESCAPE_REGEX = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+@lazyobject
+def _ANSI_ESCAPE_REGEX():
+    return re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+
 
 def _text_width(text: str) -> int:
     """
@@ -116,28 +209,27 @@ def _format_size(size: int) -> str:
 
 # the 'magic' lib might only be included in arch linux, it doesn't seem to work
 # on macos.
-try:
-    import magic
-    @xlsd_register_icon_source('libmagic')
-    def _xlsd_icon_source_libmagic(direntry: os.DirEntry) -> Optional[str]:
-        """
-        Return the icon for a direntry using the file's mimetype.
-        """
-        real_path = direntry.path if not direntry.is_symlink() else os.readlink(direntry.path)
-        try:
-            # This is twice as fast as the "intended method"
-            # magic.detect_from_filename(path).mime_type
-            # since the "intended method" seems to run the matching twice
-            mimetype = magic.mime_magic.file(real_path).split('; ')[0]
-        except:
-            return None
-
-        for pattern, icon_name in icons.MIMETYPE_ICONS:
-            if fnmatch(mimetype, pattern):
-                return icon_name
+@xlsd_register_icon_source('libmagic')
+def _xlsd_icon_source_libmagic(direntry: os.DirEntry) -> Optional[str]:
+    """
+    Return the icon for a direntry using the file's mimetype.
+    """
+    if magic is None:
         return None
-except ModuleNotFoundError:
-    pass
+
+    real_path = direntry.path if not direntry.is_symlink() else os.readlink(direntry.path)
+    try:
+        # This is twice as fast as the "intended method"
+        # magic.detect_from_filename(path).mime_type
+        # since the "intended method" seems to run the matching twice
+        mimetype = magic.mime_magic.file(real_path).split('; ')[0]
+    except:
+        return None
+
+    for pattern, icon_name in icons.MIMETYPE_ICONS:
+        if fnmatch(mimetype, pattern):
+            return icon_name
+    return None
 
 
 @xlsd_register_icon_source('extension')
@@ -511,11 +603,16 @@ def _long_list(path: str, show_hidden: bool = False) -> List[str]:
     return directories
 
 
-_ls_parser = argparse.ArgumentParser()
-_ls_parser.add_argument('paths', type=str, nargs='*', default=['.'], help="The directories to list")
-_ls_parser.add_argument("-a", "--all", help="Don't hide entries starting with .", action="store_true")
-_ls_parser.add_argument("-l", help="Long listing format", action="store_true")
-_ls_parser.add_argument("-R", "--recursive", default=False, help="Show in a tree format", action="store_true")
+@lazyobject
+def _ls_parser():
+    import argparse
+
+    lsp = argparse.ArgumentParser()
+    lsp.add_argument('paths', type=str, nargs='*', default=['.'], help="The directories to list")
+    lsp.add_argument("-a", "--all", help="Don't hide entries starting with .", action="store_true")
+    lsp.add_argument("-l", help="Long listing format", action="store_true")
+    lsp.add_argument("-R", "--recursive", default=False, help="Show in a tree format", action="store_true")
+    return lsp
 
 
 def _ls(args, stdin, stdout, stderr, spec):
