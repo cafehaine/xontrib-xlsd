@@ -1,5 +1,5 @@
 import stat
-from typing import dict, Generic, Optional, TypeVar
+from typing import Generic, Optional, TypeVar
 
 from wcwidth import wcswidth
 
@@ -86,7 +86,7 @@ class IconSet(Generic[T]):
         return self._pad_icon(icon)
 
 
-STAT_ICONS = IconSet({
+STAT_ICONS: IconSet[int] = IconSet({
     stat.S_IFSOCK: "🌐",
     stat.S_IFLNK:  "🔗",
     stat.S_IFREG:  "📄",
@@ -96,7 +96,7 @@ STAT_ICONS = IconSet({
     stat.S_IFIFO:  "🚿",
 })
 
-LS_ICONS = IconSet({
+LS_ICONS: IconSet[str] = IconSet({
     'default':    "❔",
     'error':      "🚫",
     'folder':     "📁",
