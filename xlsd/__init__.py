@@ -1,5 +1,5 @@
 import os
-from typing import Callable, Dict, List
+from typing import Callable
 
 COLORS = {
     'symlink_target': "{CYAN}",
@@ -8,9 +8,9 @@ COLORS = {
     'size_unit':      "{CYAN}",
 }
 
-XlsdSortMethod = Callable[[List[os.DirEntry]], List[os.DirEntry]]
+XlsdSortMethod = Callable[[list[os.DirEntry]], list[os.DirEntry]]
 
-XLSD_SORT_METHODS: Dict[str, XlsdSortMethod] = {}
+XLSD_SORT_METHODS: dict[str, XlsdSortMethod] = {}
 #XLSD_SORT_METHODS = {}
 
 def xlsd_register_sort_method(name: str):
@@ -31,7 +31,7 @@ def _direntry_lowercase_name(entry: os.DirEntry) -> str:
     return entry.name.lower()
 
 @xlsd_register_sort_method('directories_first')
-def xlsd_sort_directories_first(entries: List[os.DirEntry]) -> List[os.DirEntry]:
+def xlsd_sort_directories_first(entries: list[os.DirEntry]) -> list[os.DirEntry]:
     """
     Sort the entries in alphabetical order, directories first.
     """
@@ -53,7 +53,7 @@ def xlsd_sort_directories_first(entries: List[os.DirEntry]) -> List[os.DirEntry]
     return directories + files
 
 @xlsd_register_sort_method('alphabetical')
-def xlsd_sort_alphabetical(entries: List[os.DirEntry]) -> List[os.DirEntry]:
+def xlsd_sort_alphabetical(entries: list[os.DirEntry]) -> list[os.DirEntry]:
     """
     Sort the entries in alphabetical order.
     """
@@ -61,7 +61,7 @@ def xlsd_sort_alphabetical(entries: List[os.DirEntry]) -> List[os.DirEntry]:
     return entries
 
 @xlsd_register_sort_method('as_is')
-def xlsd_sort_as_is(entries: List[os.DirEntry]) -> List[os.DirEntry]:
+def xlsd_sort_as_is(entries: list[os.DirEntry]) -> list[os.DirEntry]:
     """
     Keep the entries in the same order they were returned by the OS.
     """

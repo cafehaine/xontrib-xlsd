@@ -1,5 +1,5 @@
 import stat
-from typing import Dict, Generic, Optional, TypeVar
+from typing import dict, Generic, Optional, TypeVar
 
 from wcwidth import wcswidth
 
@@ -14,7 +14,7 @@ class IconSet(Generic[T]):
     This is done by getting the cell width of each icons, and padding the
     shorter ones.
     """
-    def __init__(self, icons: Dict[T, str]):
+    def __init__(self, icons: dict[T, str]):
         self._icons = icons
         self._width = self._compute_width()
 
