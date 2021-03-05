@@ -1,4 +1,25 @@
 # Changelog for xlsd
+## Version 1.4
+- anki-code
+  - Fix icons for dotfiles
+[`9ebc2e6`](https://github.com/cafehaine/xontrib-xlsd/commit/9ebc2e6da03293c792e28f38b95c7c64eeb459bf)
+  - Include the license in the wheel
+[`ce71fb8`](https://github.com/cafehaine/xontrib-xlsd/commit/ce71fb8d6759178835172dae8318dce4ac0808ea)
+  - Make the README prettier
+[`214243d`](https://github.com/cafehaine/xontrib-xlsd/commit/214243d14033665def066bd53c9e52c25c5ad01c)
+- Anthony Scopatz
+  - Fix deprecations
+[`da9b9f5`](https://github.com/cafehaine/xontrib-xlsd/commit/da9b9f592f34fd530447c6dc9590989110709541)
+  - Speed up imports
+[`83b9ead`](https://github.com/cafehaine/xontrib-xlsd/commit/83b9ead973f27d36b7a69af584991235b3caa1f6)
+- CaféHaine
+  - Add a preview of xlsd in the README
+[`a57e212`](https://github.com/cafehaine/xontrib-xlsd/commit/a57e212769bb1b09d47c17177ee164faf46c7b00)
+  - Implement recursive long list mode
+[`83c7671`](https://github.com/cafehaine/xontrib-xlsd/commit/83c7671bd9cde006c21c2bdb14c740eacebd7243)
+  - Typing annotations (python3.9's type indexing is used, will break on older python versions)
+[`54284c3`](https://github.com/cafehaine/xontrib-xlsd/commit/54284c35a1958c89d2aa5aa565abdb2a2d58ba2c)
+[`040ff15`](https://github.com/cafehaine/xontrib-xlsd/commit/040ff1573af7d70668e8c49e5485b65069f8aba0)
 ## Version 1.3
 - CaféHaine
   - Implement support for $LS\_COLORS

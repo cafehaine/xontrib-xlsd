@@ -4,7 +4,7 @@ long_description = open('README.md').read()
 
 setup(
     name="xontrib-xlsd",
-    version="0.1.3",
+    version="0.1.4",
     license="GPLv3",
     url="https://github.com/cafehaine/xontrib-xlsd",
     description="An improved ls for xonsh, inspired by lsd",
@@ -15,7 +15,8 @@ setup(
     packages=['xontrib', 'xlsd'],
     package_dir={'xontrib': 'xontrib', 'xlsd': 'xlsd'},
     package_data={'xontrib': ['*.xsh'], 'xlsd': ['*.py']},
-    install_requires=['xonsh>=0.9.23'],
+    install_requires=['xonsh>=0.9.26'],
+    python_requires='>=3.9',
     zip_safe=False,
     classifiers=[
         "Environment :: Console",
