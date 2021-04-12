@@ -49,12 +49,6 @@ def stat():
 
 
 @lazyobject
-def platform():
-    import xonsh.platform
-    return xonsh.platform
-
-
-@lazyobject
 def RE_XONSH_COLOR():
     import xonsh.color_tools
     return xonsh.color_tools.RE_XONSH_COLOR
@@ -364,7 +358,7 @@ def _get_entries(path: str, show_hidden: bool) -> List[os.DirEntry]:
     """
     entries = []
     try:
-        with platform.scandir(path) as iterator:
+        with os.scandir(path) as iterator:
             for entry in iterator:
                 # Skip entries that start with a '.'
                 if not show_hidden and entry.name.startswith('.'):
