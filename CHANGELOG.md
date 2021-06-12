@@ -1,4 +1,8 @@
 # Changelog for xlsd
+## Version 1.5
+- CaféHaine
+  - No longer rely on xonsh.platform for os.scandir
+[`df9517f`](https://github.com/cafehaine/xontrib-xlsd/commit/df9517f3ab33e3a030cca0472ccf511566d7076f)
 ## Version 1.4
 - anki-code
   - Fix icons for dotfiles
