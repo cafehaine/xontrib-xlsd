@@ -320,7 +320,7 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
     # Show the icon
     icon = _icon_for_direntry(entry)
     colors = []
-    name = "{}{}{{RESET}}".format(icon, name)
+    name = "{} {}{{RESET}}".format(icon, name)
 
     # if entry is a directory, add a trailing '/'
     try:
