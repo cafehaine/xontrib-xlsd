@@ -122,6 +122,7 @@ def list_to_csv(x):
     return ",".join(x)
 
 
+${...}.register('XLSD_NAME_FORMAT', type="str", default='{icon} {name}')
 ${...}.register('XLSD_SORT_METHOD', type="str", default='directories_first')
 ${...}.register('XLSD_LIST_COLUMNS', validate=is_string_seq, convert=csv_to_list,
     detype=list_to_csv, default=['mode', 'hardlinks', 'uid', 'gid', 'size', 'mtime', 'name'])
@@ -320,7 +321,7 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
     # Show the icon
     icon = _icon_for_direntry(entry)
     colors = []
-    name = "{} {}{{RESET}}".format(icon, name)
+    name = $XLSD_NAME_FORMAT.format(icon=icon, name=name) + "{{RESET}}"
 
     # if entry is a directory, add a trailing '/'
     try:
