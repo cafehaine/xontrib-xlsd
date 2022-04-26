@@ -321,7 +321,7 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
     # Show the icon
     icon = _icon_for_direntry(entry)
     colors = []
-    name = $XLSD_NAME_FORMAT.format(icon=icon, name=name) + "{{RESET}}"
+    name = $XLSD_NAME_FORMAT.format(icon=icon, name=name) + "{RESET}"
 
     # if entry is a directory, add a trailing '/'
     try:
