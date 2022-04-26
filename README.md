@@ -24,6 +24,7 @@
       - [Changing the columns/the order](#changing-the-columnsthe-order)
       - [Writing your own column](#writing-your-own-column)
    - [Colors](#colors)
+   - [Item name](#item-name)
 
 # How to install xontrib-xlsd
 
@@ -187,3 +188,7 @@ xlsd.COLORS['size_unit'] = '{INTENSE_RED}'
 You can use any valid xonsh color.
 
 For a quick list of colors/text effects, check out the [xonsh tutorial on colors](https://xon.sh/tutorial.html#customizing-the-prompt).
+
+## Item Name
+
+By default, xlsd prints the item name with `{icon} {name}` format. You can update the `$XLSD_NAME_FORMAT` environment variable to change the format of the item. For example `$XLSD_NAME_FORMAT={icon}{name}` will remove the single space between icon & name.
