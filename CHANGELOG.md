@@ -1,4 +1,10 @@
 # Changelog for xlsd
+## Version 1.6
+- JD Solanki
+  - Add an environment variable to configure item display
+[`43fa979`](https://github.com/cafehaine/xontrib-xlsd/commit/43fa979f887c97bfd52ab3e7daf99e7b93614dd6)
+[`249df0d`](https://github.com/cafehaine/xontrib-xlsd/commit/249df0dd46e052e669c07d42a44e711943c54558)
+[`ba201eb`](https://github.com/cafehaine/xontrib-xlsd/commit/ba201eb7ec8d3a38bee8832eced7726e4e714142)
 ## Version 1.5
 - CaféHaine
   - No longer rely on xonsh.platform for os.scandir
