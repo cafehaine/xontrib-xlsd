@@ -4,18 +4,18 @@ import stat
 
 class PathEntry:
     """
-    FileEntry is a utility class that represents a filesystem entry at a given path. The entry can represent a file,
+    PathEntry is a utility class that represents a filesystem entry at a given path. The entry can represent a file,
     directory, or symbolic link. The class provides methods for checking the type of the entry and obtaining file
     statistics for it.
 
-    The class can be used to mirror the behavior of os.DirEntry, because os.DirEntry objects returned by os.scandir()
+    The class can be used to mirror the behavior of PathEntry, because PathEntry objects returned by os.scandir()
     do not handle individual file paths and do not allow selective control over following symbolic links for
     different operations.
     """
 
     def __init__(self, path: str) -> None:
         """
-        Initialize a new instance of the FileEntry class.
+        Initialize a new instance of the PathEntry class.
 
         :param path: A string containing a path to a file or directory.
         :type path: str

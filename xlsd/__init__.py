@@ -48,7 +48,7 @@ def xlsd_sort_directories_first(entries: list[PathEntry]) -> list[PathEntry]:
                 directories.append(entry)
             else:
                 files.append(entry)
-        except OSError: # Probably circular symbolic link
+        except OSError:  # Probably circular symbolic link
             directories.append(entry)
 
     directories.sort(key=_direntry_lowercase_name)
