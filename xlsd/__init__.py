@@ -1,5 +1,6 @@
-import os
 from typing import Callable
+from .path import PathEntry
+
 
 COLORS = {
     'symlink_target': "{CYAN}",
@@ -8,10 +9,11 @@ COLORS = {
     'size_unit':      "{CYAN}",
 }
 
-XlsdSortMethod = Callable[[list[os.DirEntry]], list[os.DirEntry]]
+
+XlsdSortMethod = Callable[[list[PathEntry]], list[PathEntry]]
 
 XLSD_SORT_METHODS: dict[str, XlsdSortMethod] = {}
-#XLSD_SORT_METHODS = {}
+
 
 def xlsd_register_sort_method(name: str):
     """
@@ -22,7 +24,8 @@ def xlsd_register_sort_method(name: str):
         return func
     return decorator
 
-def _direntry_lowercase_name(entry: os.DirEntry) -> str:
+
+def _direntry_lowercase_name(entry: PathEntry) -> str:
     """
     Return the lowercase name for a DirEntry.
 
@@ -30,8 +33,9 @@ def _direntry_lowercase_name(entry: os.DirEntry) -> str:
     """
     return entry.name.lower()
 
+
 @xlsd_register_sort_method('directories_first')
-def xlsd_sort_directories_first(entries: list[os.DirEntry]) -> list[os.DirEntry]:
+def xlsd_sort_directories_first(entries: list[PathEntry]) -> list[PathEntry]:
     """
     Sort the entries in alphabetical order, directories first.
     """
@@ -52,16 +56,18 @@ def xlsd_sort_directories_first(entries: list[os.DirEntry]) -> list[os.DirEntry]
 
     return directories + files
 
+
 @xlsd_register_sort_method('alphabetical')
-def xlsd_sort_alphabetical(entries: list[os.DirEntry]) -> list[os.DirEntry]:
+def xlsd_sort_alphabetical(entries: list[PathEntry]) -> list[PathEntry]:
     """
     Sort the entries in alphabetical order.
     """
     entries.sort(key=_direntry_lowercase_name)
     return entries
 
+
 @xlsd_register_sort_method('as_is')
-def xlsd_sort_as_is(entries: list[os.DirEntry]) -> list[os.DirEntry]:
+def xlsd_sort_as_is(entries: list[PathEntry]) -> list[PathEntry]:
     """
     Keep the entries in the same order they were returned by the OS.
     """

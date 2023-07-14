@@ -4,13 +4,17 @@ An improved ls for xonsh, inspired by lsd.
 
 Registers automatically as an alias for ls on load.
 """
-from enum import Enum, auto
-import math
 import os
-from typing import Callable, Dict, List, Optional, Tuple, Union
+import math
+
+from enum import Enum, auto
+from typing import Callable, List, Optional
 
 from xonsh.lazyasd import lazyobject
 from xonsh.tools import format_color, print_color, is_string_seq
+
+from xlsd.path import PathEntry
+
 
 # Lazy imports
 @lazyobject
@@ -343,6 +347,18 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
 
     return "".join(colors) + name
 
+def _scan_dir(path: str):
+    """
+    Scan the directory with the given path and yield FileEntry instances for each entry.
+
+    :param path: A string containing a path to a directory.
+    :type path: str
+    :yield: FileEntry instance for each entry in path.
+    :rtype: Iterator[FileEntry]
+    """
+    for entry in os.scandir(path):
+        yield PathEntry(entry.path)
+
 
 def _direntry_lowercase_name(entry: os.DirEntry) -> str:
     """
@@ -358,16 +374,21 @@ def _get_entries(path: str, show_hidden: bool) -> List[os.DirEntry]:
     Return the list of DirEntrys for a path, sorted by name, directories first.
     """
     entries = []
-    try:
-        with os.scandir(path) as iterator:
-            for entry in iterator:
+
+    path_entry = PathEntry(path)
+    if path_entry.is_dir(path):
+        try:
+            for entry in _scan_dir(path):
                 # Skip entries that start with a '.'
                 if not show_hidden and entry.name.startswith('.'):
                     continue
 
                 entries.append(entry)
-    except PermissionError:
-        pass
+        except PermissionError:
+            pass
+    elif path_entry.is_file(path):
+        # If the path is a file, create a DirEntry for it
+        entries.append(PathEntry(path))
 
     sort_method = xlsd.XLSD_SORT_METHODS.get($XLSD_SORT_METHOD, lambda x: x)
 
