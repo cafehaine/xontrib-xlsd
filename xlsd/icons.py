@@ -5,6 +5,7 @@ from wcwidth import wcswidth
 
 T = TypeVar('T')
 
+
 class IconSet(Generic[T]):
     """
     A storage for icons.

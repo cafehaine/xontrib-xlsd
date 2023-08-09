@@ -4,13 +4,17 @@ An improved ls for xonsh, inspired by lsd.
 
 Registers automatically as an alias for ls on load.
 """
-from enum import Enum, auto
-import math
 import os
-from typing import Callable, Dict, List, Optional, Tuple, Union
+import math
+
+from enum import Enum, auto
+from typing import Callable, List, Optional
 
 from xonsh.lazyasd import lazyobject
 from xonsh.tools import format_color, print_color, is_string_seq
+
+from xlsd.path import PathEntry
+
 
 # Lazy imports
 @lazyobject
@@ -129,7 +133,7 @@ ${...}.register('XLSD_LIST_COLUMNS', validate=is_string_seq, convert=csv_to_list
 ${...}.register('XLSD_ICON_SOURCES', validate=is_string_seq, convert=csv_to_list,
     detype=list_to_csv, default=['extension', 'libmagic'])
 
-XlsdColumn = Callable[[os.DirEntry],str]
+XlsdColumn = Callable[[PathEntry],str]
 
 #TODO see with xonsh devs, imo shouldn't crash
 #_XLSD_COLUMNS: Dict[str, Tuple[XlsdColumn, ColumnAlignment]] = {}
@@ -144,7 +148,7 @@ def xlsd_register_column(name: str, alignment: ColumnAlignment):
         return func
     return decorator
 
-XlsdIconSource = Callable[[os.DirEntry], Optional[str]]
+XlsdIconSource = Callable[[PathEntry], Optional[str]]
 
 #TODO see with xonsh devs, imo shouldn't crash
 #_XLSD_ICON_SOURCES: Dict[str, XlsdIconSource] = {}
@@ -205,7 +209,7 @@ def _format_size(size: int) -> str:
 # the 'magic' lib might only be included in arch linux, it doesn't seem to work
 # on macos.
 @xlsd_register_icon_source('libmagic')
-def _xlsd_icon_source_libmagic(direntry: os.DirEntry) -> Optional[str]:
+def _xlsd_icon_source_libmagic(direntry: PathEntry) -> Optional[str]:
     """
     Return the icon for a direntry using the file's mimetype.
     """
@@ -228,7 +232,7 @@ def _xlsd_icon_source_libmagic(direntry: os.DirEntry) -> Optional[str]:
 
 
 @xlsd_register_icon_source('extension')
-def _xlsd_icon_source_extension(direntry: os.DirEntry) -> Optional[str]:
+def _xlsd_icon_source_extension(direntry: PathEntry) -> Optional[str]:
     """
     Return the emoji for a direntry using the file extension.
     """
@@ -250,7 +254,7 @@ def _xlsd_icon_source_extension(direntry: os.DirEntry) -> Optional[str]:
 # /Icon sources #
 #################
 
-def _icon_for_direntry(entry: os.DirEntry) -> str:
+def _icon_for_direntry(entry: PathEntry) -> str:
     """
     Return the icon for a direntry.
     """
@@ -266,7 +270,7 @@ def _icon_for_direntry(entry: os.DirEntry) -> str:
     return icons.LS_ICONS.get(name)
 
 
-def _get_color_for_direntry(entry: os.DirEntry) -> str:
+def _get_color_for_direntry(entry: PathEntry) -> str:
     """Return one or multiple xonsh colors for the entry using $LS_COLORS."""
     colors = []
 
@@ -311,11 +315,11 @@ def _get_color_for_direntry(entry: os.DirEntry) -> str:
     return "".join("{"+color+"}" for color in colors)
 
 
-def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
+def _format_direntry_name(entry: PathEntry, show_target: bool = True) -> str:
     """
     Return a string containing a bunch of ainsi escape codes as well as the "width" of the new name.
     """
-    path = entry.path if not entry.is_symlink() else os.readlink(entry.path)
+    # path = entry.path if not entry.is_symlink() else os.readlink(entry.path)
     name = entry.name
 
     # Show the icon
@@ -343,8 +347,20 @@ def _format_direntry_name(entry: os.DirEntry, show_target: bool = True) -> str:
 
     return "".join(colors) + name
 
+def _scan_dir(path: str):
+    """
+    Scan the directory with the given path and yield PathEntry instances for each entry.
 
-def _direntry_lowercase_name(entry: os.DirEntry) -> str:
+    :param path: A string containing a path to a directory.
+    :type path: str
+    :yield: PathEntry instance for each entry in path.
+    :rtype: Iterator[PathEntry]
+    """
+    for entry in os.scandir(path):
+        yield PathEntry(entry.path)
+
+
+def _direntry_lowercase_name(entry: PathEntry) -> str:
     """
     Return the lowercase name for a DirEntry.
 
@@ -353,21 +369,26 @@ def _direntry_lowercase_name(entry: os.DirEntry) -> str:
     return entry.name.lower()
 
 
-def _get_entries(path: str, show_hidden: bool) -> List[os.DirEntry]:
+def _get_entries(path: str, show_hidden: bool) -> List[PathEntry]:
     """
-    Return the list of DirEntrys for a path, sorted by name, directories first.
+    Return the list of PathEntry's for a path, sorted by name, directories first.
     """
     entries = []
-    try:
-        with os.scandir(path) as iterator:
-            for entry in iterator:
+
+    path_entry = PathEntry(path)
+    if path_entry.is_dir(path):
+        try:
+            for entry in _scan_dir(path):
                 # Skip entries that start with a '.'
                 if not show_hidden and entry.name.startswith('.'):
                     continue
 
                 entries.append(entry)
-    except PermissionError:
-        pass
+        except PermissionError:
+            pass
+    elif path_entry.is_file(path):
+        # If the path is a file, create a DirEntry for it
+        entries.append(PathEntry(path))
 
     sort_method = xlsd.XLSD_SORT_METHODS.get($XLSD_SORT_METHOD, lambda x: x)
 
@@ -503,7 +524,7 @@ def _show_table(columns: List[List[str]], column_alignments: List[ColumnAlignmen
 ################
 
 @xlsd_register_column('mode', ColumnAlignment.LEFT)
-def _xlsd_column_mode(direntry: os.DirEntry) -> str:
+def _xlsd_column_mode(direntry: PathEntry) -> str:
     """
     Format the mode from the stat structure for a file.
     """
@@ -515,7 +536,7 @@ def _xlsd_column_mode(direntry: os.DirEntry) -> str:
 
 
 @xlsd_register_column('hardlinks', ColumnAlignment.RIGHT)
-def _xlsd_column_hardlinks(direntry: os.DirEntry) -> str:
+def _xlsd_column_hardlinks(direntry: PathEntry) -> str:
     """
     Show the number of hardlinks for a file.
     """
@@ -523,7 +544,7 @@ def _xlsd_column_hardlinks(direntry: os.DirEntry) -> str:
 
 
 @xlsd_register_column('uid', ColumnAlignment.LEFT)
-def _xlsd_column_uid(direntry: os.DirEntry) -> str:
+def _xlsd_column_uid(direntry: PathEntry) -> str:
     """
     Show the owner (user) of the file.
     """
@@ -532,7 +553,7 @@ def _xlsd_column_uid(direntry: os.DirEntry) -> str:
 
 
 @xlsd_register_column('gid', ColumnAlignment.LEFT)
-def _xlsd_column_gid(direntry: os.DirEntry) -> str:
+def _xlsd_column_gid(direntry: PathEntry) -> str:
     """
     Show the group that owns the file.
     """
@@ -541,7 +562,7 @@ def _xlsd_column_gid(direntry: os.DirEntry) -> str:
 
 
 @xlsd_register_column('size', ColumnAlignment.RIGHT)
-def _xlsd_column_size(direntry: os.DirEntry) -> str:
+def _xlsd_column_size(direntry: PathEntry) -> str:
     """
     Format the size of a file.
     """
@@ -549,7 +570,7 @@ def _xlsd_column_size(direntry: os.DirEntry) -> str:
 
 
 @xlsd_register_column('mtime', ColumnAlignment.LEFT)
-def _xlsd_column_mtime(direntry: os.DirEntry) -> str:
+def _xlsd_column_mtime(direntry: PathEntry) -> str:
     """
     Format the last modification date for a direntry.
     """
@@ -557,7 +578,7 @@ def _xlsd_column_mtime(direntry: os.DirEntry) -> str:
 
 
 @xlsd_register_column('name', ColumnAlignment.LEFT)
-def _xlsd_column_name(direntry: os.DirEntry) -> str:
+def _xlsd_column_name(direntry: PathEntry) -> str:
     """
     Simply format the filename of the direntry.
     """

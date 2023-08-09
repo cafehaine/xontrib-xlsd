@@ -68,7 +68,7 @@ xontrib load xlsd
 
 ### Registering an icon
 
-In xlsd, icons are registered using a name. The name is then used by the different rules to get an icon for an `os.DirEntry`.
+In xlsd, icons are registered using a name. The name is then used by the different rules to get an icon for an `PathEntry`.
 
 You can view the built-in icons in [xlsd/icons.py](xlsd/icons.py#L99).
 
@@ -162,7 +162,7 @@ All the built-in columns are used in this config.
 
 ### Writing your own column
 
-A column is a function taking for only argument an `os.DirEntry` and that outputs a string.
+A column is a function taking for only argument an `PathEntry` and that outputs a string.
 
 A simple filename column could be registered like this:
 ```python
