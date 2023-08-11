@@ -1,4 +1,9 @@
 # Changelog for xlsd
+## Version 1.7
+- tr0yspradling
+  - Fix a crash occuring when called on a single file
+[`0bdc5d5`](https://github.com/cafehaine/xontrib-xlsd/commit/0bdc5d5f3374d9d859f52a230ffc63f921c71f07)
+[`e0f594e`](https://github.com/cafehaine/xontrib-xlsd/commit/e0f594ed7a6d4e53c05fb37d6152d04c78acf2d1)
 ## Version 1.6
 - JD Solanki
   - Add an environment variable to configure item display
